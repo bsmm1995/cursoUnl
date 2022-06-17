@@ -2,22 +2,23 @@ package com.unl.cursounl.service.impl;
 
 import com.unl.cursounl.domain.Person;
 import com.unl.cursounl.domain.dto.PersonDto;
+import com.unl.cursounl.exceptions.CustomNotFoundException;
 import com.unl.cursounl.repository.PersonRepository;
 import com.unl.cursounl.service.PersonService;
 import com.unl.cursounl.util.Mapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
 
+/** {@inheritDoc} */
 @Service
 @RequiredArgsConstructor
 public class PersonServiceImpl implements PersonService {
   private final PersonRepository personRepository;
 
+  /** {@inheritDoc} */
   @Override
   public PersonDto getById(long id) {
     return convertEntityToDto(getEntityById(id));
@@ -29,12 +30,14 @@ public class PersonServiceImpl implements PersonService {
     return this.personRepository.findAll().stream().map(this::convertEntityToDto).toList();
   }
 
+  /** {@inheritDoc} */
   @Override
   public PersonDto create(PersonDto data) {
     Person person = convertDtoToEntity(data);
     return convertEntityToDto(this.personRepository.save(person));
   }
 
+  /** {@inheritDoc} */
   @Override
   public PersonDto update(long id, PersonDto data) {
     Person person = getEntityById(id);
@@ -42,7 +45,7 @@ public class PersonServiceImpl implements PersonService {
     person.setLastname(data.getLastname());
     return convertEntityToDto(this.personRepository.save(person));
   }
-
+  /** {@inheritDoc} */
   @Override
   public long deleteById(long id) {
     getEntityById(id);
@@ -53,8 +56,7 @@ public class PersonServiceImpl implements PersonService {
   private Person getEntityById(long id) {
     Optional<Person> optional = this.personRepository.findById(id);
     if (optional.isEmpty()) {
-      throw new ResponseStatusException(
-          HttpStatus.NOT_FOUND, "No se encontró un registro con el id " + id);
+      throw new CustomNotFoundException("No se encontró el registro con el id " + id);
     }
     return optional.get();
   }

@@ -2,63 +2,73 @@ package com.unl.cursounl.service.impl;
 
 import com.unl.cursounl.domain.Vaccine;
 import com.unl.cursounl.domain.dto.VaccineDto;
+import com.unl.cursounl.exceptions.CustomNotFoundException;
 import com.unl.cursounl.repository.VaccineRepository;
 import com.unl.cursounl.service.VaccineService;
 import com.unl.cursounl.util.Mapper;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.webjars.NotFoundException;
 
 import java.util.List;
 import java.util.Optional;
 
+/** {@inheritDoc} */
 @Service
 @AllArgsConstructor
 public class VaccineServiceImpl implements VaccineService {
   private final VaccineRepository vaccineRepository;
 
+  /** {@inheritDoc} */
   @Override
   public VaccineDto getById(long id) {
-    Optional<Vaccine> optional = this.vaccineRepository.findById(id);
-    if (optional.isEmpty()) {
-      throw new NotFoundException("No existe el registro con id " + id);
-    }
-    return Mapper.modelMapper().map(optional.get(), VaccineDto.class);
+    Vaccine vaccine = getEntityById(id);
+    return convertEntityToDto(vaccine);
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<VaccineDto> getAll() {
     List<Vaccine> vaccines = this.vaccineRepository.findAll();
-    return vaccines.stream()
-        .map(element -> Mapper.modelMapper().map(element, VaccineDto.class))
-        .toList();
+    return vaccines.stream().map(this::convertEntityToDto).toList();
   }
 
+  /** {@inheritDoc} */
   @Override
   public VaccineDto create(VaccineDto data) {
-    Vaccine vaccine = Mapper.modelMapper().map(data, Vaccine.class);
-    return Mapper.modelMapper().map(this.vaccineRepository.save(vaccine), VaccineDto.class);
+    Vaccine vaccine = convertDtoToEntity(data);
+    return convertEntityToDto(this.vaccineRepository.save(vaccine));
   }
 
+  /** {@inheritDoc} */
   @Override
   public VaccineDto update(long id, VaccineDto data) {
-    Optional<Vaccine> optional = this.vaccineRepository.findById(id);
-    if (optional.isEmpty()) {
-      throw new NotFoundException("No existe el registro con id " + id);
-    }
-    optional.get().setName(data.getName());
-    optional.get().setLot(data.getLot());
-
-    Vaccine vaccine = this.vaccineRepository.save(optional.get());
-    return Mapper.modelMapper().map(vaccine, VaccineDto.class);
+    Vaccine vaccine = getEntityById(id);
+    vaccine.setName(data.getName());
+    vaccine.setLot(data.getLot());
+    return convertEntityToDto(this.vaccineRepository.save(vaccine));
   }
 
+  /** {@inheritDoc} */
   @Override
   public long deleteById(long id) {
-    if (this.vaccineRepository.findById(id).isEmpty()) {
-      throw new NotFoundException("No existe el registro con id " + id);
-    }
+    getEntityById(id);
     this.vaccineRepository.deleteById(id);
     return id;
+  }
+
+  private Vaccine getEntityById(long id) {
+    Optional<Vaccine> optional = this.vaccineRepository.findById(id);
+    if (optional.isEmpty()) {
+      throw new CustomNotFoundException("No se encontró el registro con el id " + id);
+    }
+    return optional.get();
+  }
+
+  private VaccineDto convertEntityToDto(Vaccine entity) {
+    return Mapper.modelMapper().map(entity, VaccineDto.class);
+  }
+
+  private Vaccine convertDtoToEntity(VaccineDto entity) {
+    return Mapper.modelMapper().map(entity, Vaccine.class);
   }
 }

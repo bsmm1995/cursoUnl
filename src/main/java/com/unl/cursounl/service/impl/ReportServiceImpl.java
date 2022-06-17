@@ -10,11 +10,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/** {@inheritDoc} */
 @Service
 @AllArgsConstructor
 public class ReportServiceImpl implements ReportService {
   private final DaoRepository daoRepository;
 
+  /** {@inheritDoc} */
   @Override
   public List<ReportDto> getByDateRange(Date startDate, Date endDate) {
     List<Object[]> objects = this.daoRepository.getReport(startDate, endDate);
