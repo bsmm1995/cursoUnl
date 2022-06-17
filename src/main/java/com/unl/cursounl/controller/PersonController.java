@@ -9,6 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -31,13 +32,14 @@ public class PersonController {
   }
 
   @PostMapping
-  public ResponseEntity<PersonDto> create(@RequestBody PersonDto data) {
+  public ResponseEntity<PersonDto> create(@RequestBody @Valid PersonDto data) {
     log.info("Create. data=" + data);
     return new ResponseEntity<>(this.personService.create(data), HttpStatus.CREATED);
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<PersonDto> update(@PathVariable long id, @RequestBody PersonDto data) {
+  public ResponseEntity<PersonDto> update(
+      @PathVariable long id, @RequestBody @Valid PersonDto data) {
     log.info("Update. id=" + id + ", data=" + data);
     return new ResponseEntity<>(this.personService.update(id, data), HttpStatus.CREATED);
   }
